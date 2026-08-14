@@ -22,7 +22,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
- * Lab 5 security configuration.
+ * Lab 6 security configuration.
  *
  * <p>
  * <b>Branch 1:</b> open filter chain so Lab 4 routes stay reachable.
@@ -122,7 +122,7 @@ public class SecurityConfig {
     }
 
     /**
-     * Lab 5 Branch 9: BCrypt password hashing.
+     * Lab 6 Branch 9: BCrypt password hashing.
      *
      * <p>{@link BCryptPasswordEncoder} hashes passwords on encode and verifies them on
      * login via {@code matches()}. Stored values must be BCrypt hashes — not plain text.
@@ -135,7 +135,7 @@ public class SecurityConfig {
     }
 
     /**
-     * Lab 5 Branch 7: post-login redirect based on {@code passwordChangeRequired}.
+     * Lab 6 Branch 7: post-login redirect based on {@code passwordChangeRequired}.
      *
      * <p>After Spring Security authenticates the user, this handler loads the Lab 4
      * {@link User} row and checks the flag. If true, the user is sent to

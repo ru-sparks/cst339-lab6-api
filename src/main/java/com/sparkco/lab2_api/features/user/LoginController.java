@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 /**
  * Serves the Thymeleaf login page.
  *
- * <p>Lab 5 Branch 3: only GET remains here. POST {@code /login} is processed by Spring
+ * <p>Lab 6 Branch 3: only GET remains here. POST {@code /login} is processed by Spring
  * Security's form-login filter (see {@link SecurityConfig}), which authenticates through
  * {@link org.springframework.security.core.userdetails.UserDetailsService}. Do not restore
  * manual password comparison in this controller.

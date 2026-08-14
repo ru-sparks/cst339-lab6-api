@@ -14,16 +14,16 @@ The course conceptually has two tracks:
 | **Tutorial lab track** | Often **Album-only** CRUD (narrower API surface) | Step-by-step lab writeups / tutorials |
 | **Milestone track** | CRUD across Chinook-style entities | **User stories**, no tutorial narrative |
 
-Lab 5 (full Chinook entities + Spring Security) is the parent. It was forked (or will be forked) twice:
+**How the instructor trees actually grew:** labs were evolved directly into the CLC/milestone product (full Chinook + security + deploy) instead of forking at Lab 5. A late Lab 6 fork still works and is teachable: the CLC repo keeps every entity; this Lab 6 instructor tree is cut back to Album so Cursor matches the student lab track.
 
-| Fork | Keep | Why |
+| Tree | Keep | Why |
 | --- | --- | --- |
-| **Milestone 3 / CLC** | All entity endpoints | Groups keep the full API surface. CLC Milestone 3 is cloud deploy; Milestone 4 is users + Spring Security. |
-| **Lab 6** | **Album only** | Labs should not ship every entity endpoint. First task after the fork: delete non-Album features, then rebuild Album infrastructure. |
+| **Milestone 3 / CLC** (`cst-339-milestone3`) | All entity endpoints | Groups keep the full API surface. CLC Milestone 3 is cloud deploy; Milestone 4 is users + Spring Security. |
+| **Lab 6** (this repo) | **Album only** | Student labs are already on that narrower track. Instructor strip here is catch-up so this tree matches them — **not** a student assignment. |
 
 **Students never clone the instructor repositories.** Each student (lab) and each CLC (milestone) creates their own GitHub repo early in the course and keeps working in that repo through later assignments. Instructor forks exist so Cursor has notes and a reference tree, not as a student starter.
 
-This workspace is the **instructor Milestone 3** tree (full entities). Lab 6’s **instructor/Cursor workspace** should fork **this repo**, not Lab 5: the Java is the same, and this tree has the catch-up notes. After that fork, strip to Album so the instructor Lab 6 tree matches what the lab assignment asks students to do in *their* lab repo.
+This workspace is the **instructor Lab 6** tree (forked from the evolved Milestone 3 product). Code still has every Chinook package until the instructor strip. After the strip, it should match what lab students already have: Album CRUD, users, Thymeleaf, Lab 5 security.
 
 **Do not modify the student `README.md` to explain milestone-vs-lab scope** — that confuses students if README text is reused on the other track.
 
@@ -101,7 +101,7 @@ Finished in this tree (form login, BCrypt, API matrix, secrets out of Git). Hist
 
 ### Lab 5 implementation status
 
-Complete through Branch 13 on the parent (BCrypt, seed hash, registration locked to `USER`, API/Swagger matrix, datasource env vars / local profile). This Milestone 3 tree includes that finished security stack **and** every Chinook feature package.
+Complete through Branch 13 on the parent (BCrypt, seed hash, registration locked to `USER`, API/Swagger matrix, datasource env vars / local profile). This Lab 6 fork still includes that finished security stack **and** every Chinook feature package until the instructor Album strip.
 
 **Instructor note — change-password “first user” bug:** Some instructor trees (including this repo historically) updated passwords via `findAll().findFirst()`. **Students may not have that bug.** Fix Principal-based updates in code when doing Branch 8, but **do not enshrine that bug in the student Lab 5 assignment** as a Lab 4 defect they must discover. Frame Branch 8 as wiring change-password to the authenticated principal.
 
@@ -114,39 +114,48 @@ Complete through Branch 13 on the parent (BCrypt, seed hash, registration locked
 
 ---
 
-## CLC Milestones 3 and 4 (this workspace)
+## CLC Milestones 3 and 4 (writeups copied with this fork)
 
-Student writeups (PR-focused): `CST-339-CLC_Milestone_3_Cloud_Deployment.md` and `CST-339-CLC_Milestone_4_User_Management_and_Security.md` (plus `.docx`). Combined security-and-deployment draft kept at `CST-339-CLC_Milestone_3_Security_and_Deployment.md`.
+Student writeups (PR-focused): `CST-339-CLC_Milestone_3_Cloud_Deployment.md` and `CST-339-CLC_Milestone_4_User_Management_and_Security.md` (plus `.docx` if present). Combined security-and-deployment draft kept at `CST-339-CLC_Milestone_3_Security_and_Deployment.md`. Live CLC coding stays on `cst-339-milestone3`, not this Lab 6 tree.
 
 - **Milestone 3** (after Lab 3): two code PRs (Docker, Neon). Render URL is documented (design doc + video), not a third PR. CLC groups are 2–3.
 - **Milestone 4** (after Labs 4–5): three code PRs (users, authentication, authorization + secrets). Redeploy documented the same way.
 - Split for the calendar (combined version left a two-week gap). M3 is lighter than M4; M2 stays the heaviest CLC. Quizzes carry conceptual points (JAR/Docker/Render, authn vs authz).
 
-This instructor repo already has Lab 3–5 **code** prerequisites for Render (`Dockerfile`, `server.port=${PORT:8080}`, `SPRING_DATASOURCE_*`). Live Neon/Render URLs are operational proof, not in Git.
+The Milestone 3 instructor repo already has Lab 3–5 **code** prerequisites for Render (`Dockerfile`, `server.port=${PORT:8080}`, `SPRING_DATASOURCE_*`). Those files also came along in this Lab 6 copy. Live Neon/Render URLs are operational proof, not in Git.
 
-## Lab 6 fork (instructor tree, from this repo)
+## Lab 6 (this workspace)
 
-Fork **this Milestone 3 tree** (`cst-339-milestone3`) for the next Cursor project. Code matches completed Lab 5; `canvas_readme.md` stays with the fork.
+Remote: `https://github.com/ru-sparks/cst339-lab6-api.git`. Copied from the evolved Milestone 3 product (labs were not forked on time; still teachable). `canvas_readme.md` stays here.
 
-Students keep using **their existing lab repository** (the one they have used since Lab 1/2). The Lab 6 writeup tells them to drop non-Album Chinook CRUD in that repo (if it is still there) and add Album query endpoints. They do not clone this fork.
+**Students are already on the Album-only lab track.** They continue **their existing lab repository**. They do **not** strip entities in Lab 6, and they do not clone this instructor repo. The student writeup adds query work on Album they already have.
 
-CLC groups keep using **their existing milestone repository**. Milestone 6 is more PRs on that repo. They do not switch to Album-only.
+CLC groups keep using **their existing milestone repository**. Milestone 6 is more PRs on that full-entity product. They do not switch to Album-only.
 
-Album is the lab entity on purpose: it is a small CRUD surface (`title`, `artist_id`) **and** it sits in the Chinook graph (album → artist, tracks → album, then genre / media type). Lab 6 uses those relationships for paging, filtering, and joins so students can see why a DTO is a message and an entity is persistence. Today `AlbumDTO` is 1:1 with `Album` (`albumId`, `title`, `artistId`) — that mapping looks like ceremony until a query result is no longer one table.
+Album is the lab entity on purpose: it is a small CRUD surface (`title`, `artist_id`) **and** it sits in the Chinook graph (album → artist, tracks → album, then genre / media type). Lab 6 uses those relationships so students can see why a DTO is a message and an entity is persistence. Today `AlbumDTO` is 1:1 with `Album` (`albumId`, `title`, `artistId`) — that mapping looks like ceremony until a query result is no longer one table.
 
-### First tasks after the Lab 6 fork
+### Lab 6 student content (required in this numbered lab)
 
-1. **Delete non-Album Chinook features.** Remove feature packages and tests for artist, track, customer, employee, genre, invoice, invoice_line, media_type, playlist, playlist_track (controllers, services, repositories, DTOs, mappers). Keep `features/user/**`, Thymeleaf admin, Spring Security, greeting if still used, `/api/albums`.
-2. **Recreate Album infrastructure.** After the strip, Album should still compile, start, and CRUD through `/api/albums` under the Lab 5 security matrix. Then add only what Album queries need: read-side types or repositories for related tables (Artist, Track, …) **behind** Album endpoints. No public CRUD packages for those related entities.
-3. **Then Lab 6 content:** paging, filtering, **and** at least one join plus one aggregate in the same numbered lab (album + artist name, track count or duration). That is the DTO-vs-entity payoff. New query endpoints return Records. They do not return `Album` entities or lazy graphs. Extra API variation belongs in more Lab 6 PRs and in Milestone 6, not in a Lab 7 / Milestone 7 pair.
+1. **Paging** — required, not optional. Chinook has **372 albums** — enough that an unpaged `GET /api/albums` is a real dump, and page size / page number actually matter. Students page Album (or Album query) results; they do not return the whole table.
+2. **Filtering** — at least title and/or artist name.
+3. **Join** — album + artist name (query Record, not a lazy `Album` graph).
+4. **Aggregate** — track count or duration on the same query story.
+
+New query endpoints return Records. They do not return `Album` entities or lazy graphs. Extra API variation belongs in more Lab 6 PRs and in Milestone 6, not in a Lab 7 / Milestone 7 pair.
+
+### Instructor-only first tasks on this tree
+
+1. **Delete non-Album Chinook features** so this Cursor tree matches the student lab surface. Remove feature packages and tests for artist, track, customer, employee, genre, invoice, invoice_line, media_type, playlist, playlist_track (controllers, services, repositories, DTOs, mappers). Keep `features/user/**`, Thymeleaf admin, Spring Security, `/api/albums`. Greeting was an extra REST endpoint — remove it with the strip. Do **not** put this strip in the student Lab 6 writeup. **Done** (2026-08-14): remaining feature packages are `album` and `user`.
+2. **Recreate Album query infrastructure.** After the strip, Album should still compile, start, and CRUD through `/api/albums` under the Lab 5 security matrix. Then add only what Album queries need: read-side types or repositories for related tables (Artist, Track, …) **behind** Album endpoints. No public CRUD packages for those related entities.
+3. **Then implement the Lab 6 content above** (paging, filtering, join, aggregate) and write the student tutorial markdown.
 
 Keep Java package `com.sparkco.lab2_api`. Do not rewrite the student README to explain milestone-vs-lab scope.
 
 ### Catch-up checklist
 
-1. Identify the tree: instructor **Milestone 3** (this repo) vs instructor **Lab 6** (fork of this repo, then Album-only). Students are on their own remotes.
-2. Security is already complete on this parent. Fork for notes; strip to Album in the instructor Lab 6 tree.
-3. Lab 6 assignment: students continue their lab repo; delete non-Album CRUD there; related tables only as query infrastructure under Album.
+1. This repo is instructor **Lab 6** (`cst339-lab6-api`). CLC coding stays on `cst-339-milestone3`. Students are on their own remotes.
+2. Security is already complete. Instructor strip to Album is next so this tree matches the student lab track.
+3. Lab 6 assignment: students continue their Album-only lab repo; **no entity strip**; add paging, filtering, join, and aggregate. Related tables only as query infrastructure under Album.
 4. CLC: continue the group milestone repo; full entity surface; PR-focused writeups; groups of 2–3.
 5. Leave the student `README.md` track-agnostic.
 
@@ -154,7 +163,7 @@ Keep Java package `com.sparkco.lab2_api`. Do not rewrite the student README to e
 
 **No implementation Milestone 7.** Lab 7 was only “more API variation” on Lab 6. That variation is Milestone 6’s field of PRs (and extra Lab 6 branches if needed).
 
-**Stop at Lab 6 as a numbered lab** if Lab 6 includes join + aggregate so the DTO insight actually lands. A second individual query lab at the end of the term stacks too many labs; the course already tends to dump labs in the last weeks.
+**Stop at Lab 6 as a numbered lab** if Lab 6 includes **paging**, join, and aggregate so the DTO insight actually lands. A second individual query lab at the end of the term stacks too many labs; the course already tends to dump labs in the last weeks.
 
 **Milestone 7 may be a presentation** (capstone defense of the CLC product: architecture, security, deployment, query DTOs vs entities). That fills the last CLC slot without another build. It is not Lab 7 with a new number.
 
@@ -186,5 +195,5 @@ Lab 6 (Album-only tutorial) teaches the pattern. Milestone 6 applies it on the g
 ## Repo remotes
 
 - Lab 5 parent: `https://github.com/ru-sparks/cst339-lab5-api.git`
-- This workspace (Milestone 3 CLC): `https://github.com/ru-sparks/cst-339-milestone3.git`
-- Lab 6 instructor fork: from this repo; update this line with the new remote when it exists.
+- Milestone 3 CLC (full entities): `https://github.com/ru-sparks/cst-339-milestone3.git`
+- This workspace (Lab 6 instructor): `https://github.com/ru-sparks/cst339-lab6-api.git`

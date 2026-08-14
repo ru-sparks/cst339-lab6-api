@@ -16,7 +16,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * Lab 5 Branch 8/9: password updates target the named user and store a BCrypt hash.
+ * Lab 6 Branch 8/9: password updates target the named user and store a BCrypt hash.
  */
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {

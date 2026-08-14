@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap;
 
 /**
- * Lab 5 Branch 11: self-registration always creates {@code USER}; role is not client-controlled.
+ * Lab 6 Branch 11: self-registration always creates {@code USER}; role is not client-controlled.
  */
 class UserRegistrationControllerTest {
 

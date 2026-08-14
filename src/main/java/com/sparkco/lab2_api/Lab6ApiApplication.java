@@ -4,10 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class Lab5ApiApplication {
+public class Lab6ApiApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(Lab5ApiApplication.class, args);
+		SpringApplication.run(Lab6ApiApplication.class, args);
 	}
 
 }

@@ -20,7 +20,7 @@ public class UserService {
     }
 
     /**
-     * Lab 5 Branch 9/11: persist a BCrypt hash and always store role {@code USER}
+     * Lab 6 Branch 9/11: persist a BCrypt hash and always store role {@code USER}
      * for the public registration path (promotion happens only via administration).
      */
     public User registerUser(User user) {
@@ -34,7 +34,7 @@ public class UserService {
     }
 
     /**
-     * Lab 5 Branch 8/9: update the password for the authenticated account only.
+     * Lab 6 Branch 8/9: update the password for the authenticated account only.
      *
      * <p>Looks up the user by {@code username} (from {@code Principal.getName()}), stores a
      * BCrypt hash of {@code newPassword}, and clears {@code passwordChangeRequired} so
