@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">Lab 5</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
+                aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item" sec:authorize="isAnonymous()">
+                        <a class="nav-link" th:href="@{/login}">Login</a>
+                    </li>
+                    <li class="nav-item" sec:authorize="isAnonymous()">
+                        <a class="nav-link" th:href="@{/register}">Register</a>
+                    </li>
+                    <li class="nav-item" sec:authorize="hasAuthority('ADMIN')">
+                        <a class="nav-link" th:href="@{/admin/users}">User Administration</a>
+                    </li>
+                    <li class="nav-item" sec:authorize="isFullyAuthenticated()">
+                        <form th:action="@{/logout}" method="post" class="d-none"></form>
+                        <a href="#" class="nav-link"
+                            onclick="this.previousElementSibling.submit(); return false;">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+</body>
+
+</html>

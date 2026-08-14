@@ -1,0 +1,8 @@
+# Lab 5 Branch 13: local datasource secrets template.
+# Copy this file to application-local.properties in the same folder and fill in
+# your PostgreSQL URL, username, and password.
+# application-local.properties is gitignored — do not commit it.
+
+spring.datasource.url=jdbc:postgresql://localhost:5432/chinook
+spring.datasource.username=postgres
+spring.datasource.password=your-database-password
