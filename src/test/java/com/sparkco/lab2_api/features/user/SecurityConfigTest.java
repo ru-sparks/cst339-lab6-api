@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 /**
- * Lab 5 Branch 2: focused tests for DB-backed {@link UserDetails} mapping.
+ * Lab 6 Branch 2: focused tests for DB-backed {@link UserDetails} mapping.
  */
 @ExtendWith(MockitoExtension.class)
 class SecurityConfigTest {

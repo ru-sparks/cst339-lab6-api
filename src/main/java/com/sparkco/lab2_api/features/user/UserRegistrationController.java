@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
- * Public self-registration. Lab 5 Branch 11 always assigns {@code USER}; administrators
+ * Public self-registration. Lab 6 Branch 11 always assigns {@code USER}; administrators
  * promote accounts through {@code /admin/users}, not through this form.
  */
 @Controller

@@ -12,7 +12,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 /**
  * Thymeleaf change-password flow.
  *
- * <p>Lab 5 Branch 8: the POST handler uses {@link Principal} so only the signed-in user's
+ * <p>Lab 6 Branch 8: the POST handler uses {@link Principal} so only the signed-in user's
  * password is updated. {@code /change-password} remains authenticated via
  * {@link SecurityConfig} ({@code anyRequest().authenticated()}).
  */

@@ -3,6 +3,9 @@ package com.sparkco.lab2_api.features.user;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -10,14 +13,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-
-import com.sparkco.lab2_api.features.album.AlbumController;
-import com.sparkco.lab2_api.features.album.AlbumDTO;
-import com.sparkco.lab2_api.features.album.AlbumService;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -26,8 +21,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
+import com.sparkco.lab2_api.features.album.AlbumController;
+import com.sparkco.lab2_api.features.album.AlbumDTO;
+import com.sparkco.lab2_api.features.album.AlbumService;
+
 /**
- * Lab 5 Branch 12: Role Authorization Policy for the REST API, Swagger, and admin pages.
+ * Lab 6 Branch 12: Role Authorization Policy for the REST API, Swagger, and admin pages.
  *
  * <p>{@code @WithMockUser(authorities = ...)} must use {@code authorities}, not {@code roles},
  * because the filter chain checks {@code hasAuthority("USER")} / {@code hasAuthority("ADMIN")}
