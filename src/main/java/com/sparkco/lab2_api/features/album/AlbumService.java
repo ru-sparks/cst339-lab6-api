@@ -15,11 +15,15 @@ public class AlbumService {
     }
 
     /**
-     * Page albums from PostgreSQL. Spring Data applies LIMIT/OFFSET in the query;
-     * this does not load the full Chinook catalog and slice it in memory.
+     * Page albums from PostgreSQL. When {@code title} is present, the filter runs in the
+     * repository query so {@code totalElements} is the match count, not the full catalog.
      */
-    public Page<AlbumDTO> getAllAlbums(Pageable pageable) {
-        return albumRepository.findAll(pageable).map(AlbumMapper::toDTO);
+    public Page<AlbumDTO> getAllAlbums(String title, Pageable pageable) {
+        if (title == null || title.isBlank()) {
+            return albumRepository.findAll(pageable).map(AlbumMapper::toDTO);
+        }
+        return albumRepository.findByTitleContainingIgnoreCase(title.trim(), pageable)
+                .map(AlbumMapper::toDTO);
     }
 
     public AlbumDTO getAlbumById(Integer albumId) {

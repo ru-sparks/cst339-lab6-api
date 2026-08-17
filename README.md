@@ -87,13 +87,14 @@ Swagger requires a signed-in user (Lab 5). Demo login is `admin` / `password`. T
 
 ### `GET /api/albums` query parameters
 
-All three are optional. Omit them for page 0, size 20, unsorted. A `USER` or `ADMIN` may call this; anonymous requests are redirected to login.
+All four are optional. Omit them for page 0, size 20, unsorted. A `USER` or `ADMIN` may call this; anonymous requests are redirected to login.
 
 | Parameter | Default | Meaning |
 | --- | --- | --- |
 | `page` | `0` | 0-based page index |
 | `size` | `20` | Albums per page |
 | `sort` | none | Album field: `title`, `albumId`, or `artistId`. Add `,desc` to reverse. Do not send Swagger’s placeholder `string`. |
+| `title` | none | Case-insensitive contains filter on album title. `totalElements` is then the match count, not the full catalog. |
 
 `page=0` with `size` and `sort` is a **top N**. Examples:
 
@@ -102,6 +103,7 @@ GET /api/albums
 GET /api/albums?page=0&size=20&sort=title
 GET /api/albums?page=0&size=50&sort=title,desc
 GET /api/albums?page=1&size=20
+GET /api/albums?title=greatest&page=0&size=20
 ```
 
 The response is a Spring Data `Page`: `content` (this page’s albums) plus metadata (`totalElements`, `totalPages`, `number`, `size`, `first`, `last`). `totalElements` is the catalog count, not the page size.
