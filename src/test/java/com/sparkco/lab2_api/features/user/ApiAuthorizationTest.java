@@ -9,6 +9,8 @@ import static org.mockito.Mockito.when;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -17,6 +19,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
@@ -72,10 +75,14 @@ class ApiAuthorizationTest {
     @Test
     @WithMockUser(username = "alice", authorities = "USER")
     void userCanGetApiResource() throws Exception {
-        when(albumService.getAllAlbums()).thenReturn(List.of(new AlbumDTO(1, "Test Album", 1)));
+        when(albumService.getAllAlbums(any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(new AlbumDTO(1, "Test Album", 1))));
 
         mockMvc.perform(get("/api/albums"))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content[0].title").value("Test Album"))
+                .andExpect(jsonPath("$.totalElements").value(1));
     }
 
     @Test
@@ -92,7 +99,8 @@ class ApiAuthorizationTest {
     @Test
     @WithMockUser(username = "admin", authorities = "ADMIN")
     void adminCanGetAndWriteApiResource() throws Exception {
-        when(albumService.getAllAlbums()).thenReturn(List.of(new AlbumDTO(1, "Test Album", 1)));
+        when(albumService.getAllAlbums(any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(new AlbumDTO(1, "Test Album", 1))));
         when(albumService.createAlbum(any(AlbumDTO.class))).thenReturn(new AlbumDTO(1, "Test Album", 1));
         when(albumService.updateAlbum(eq(1), any(AlbumDTO.class))).thenReturn(new AlbumDTO(1, "Test Album", 1));
         when(albumService.deleteAlbum(1)).thenReturn(true);

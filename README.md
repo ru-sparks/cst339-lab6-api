@@ -79,9 +79,32 @@ Committed `application.properties` only contains a local PostgreSQL example (`jd
 
 ## API documentation
 
-Once the app is running, the Swagger UI is available at:
+Once the app is running and you are signed in, Swagger UI is at:
 
 - `/swagger-ui/index.html`
+
+Swagger requires a signed-in user (Lab 5). Demo login is `admin` / `password`. That is not the PostgreSQL password.
+
+### `GET /api/albums` query parameters
+
+All three are optional. Omit them for page 0, size 20, unsorted. A `USER` or `ADMIN` may call this; anonymous requests are redirected to login.
+
+| Parameter | Default | Meaning |
+| --- | --- | --- |
+| `page` | `0` | 0-based page index |
+| `size` | `20` | Albums per page |
+| `sort` | none | Album field: `title`, `albumId`, or `artistId`. Add `,desc` to reverse. Do not send Swagger’s placeholder `string`. |
+
+`page=0` with `size` and `sort` is a **top N**. Examples:
+
+```
+GET /api/albums
+GET /api/albums?page=0&size=20&sort=title
+GET /api/albums?page=0&size=50&sort=title,desc
+GET /api/albums?page=1&size=20
+```
+
+The response is a Spring Data `Page`: `content` (this page’s albums) plus metadata (`totalElements`, `totalPages`, `number`, `size`, `first`, `last`). `totalElements` is the catalog count, not the page size.
 
 ## Testing
 

@@ -23,7 +23,7 @@ The course conceptually has two tracks:
 
 **Students never clone the instructor repositories.** Each student (lab) and each CLC (milestone) creates their own GitHub repo early in the course and keeps working in that repo through later assignments. Instructor forks exist so Cursor has notes and a reference tree, not as a student starter.
 
-This workspace is the **instructor Lab 6** tree (forked from the evolved Milestone 3 product). Code still has every Chinook package until the instructor strip. After the strip, it should match what lab students already have: Album CRUD, users, Thymeleaf, Lab 5 security.
+This workspace is the **instructor Lab 6** tree (forked from the evolved Milestone 3 product). Non-Album public CRUD is stripped. Remaining surface: Album CRUD, users, Thymeleaf, Lab 5 security. User-facing labels (navbar, home, main class `Lab6ApiApplication`) say Lab 6. Java package stays `com.sparkco.lab2_api`.
 
 **Do not modify the student `README.md` to explain milestone-vs-lab scope** — that confuses students if README text is reused on the other track.
 
@@ -101,7 +101,7 @@ Finished in this tree (form login, BCrypt, API matrix, secrets out of Git). Hist
 
 ### Lab 5 implementation status
 
-Complete through Branch 13 on the parent (BCrypt, seed hash, registration locked to `USER`, API/Swagger matrix, datasource env vars / local profile). This Lab 6 fork still includes that finished security stack **and** every Chinook feature package until the instructor Album strip.
+Complete through Branch 13 on the parent (BCrypt, seed hash, registration locked to `USER`, API/Swagger matrix, datasource env vars / local profile). This Lab 6 fork keeps that finished security stack. Public API feature packages are `album` and `user` only.
 
 **Instructor note — change-password “first user” bug:** Some instructor trees (including this repo historically) updated passwords via `findAll().findFirst()`. **Students may not have that bug.** Fix Principal-based updates in code when doing Branch 8, but **do not enshrine that bug in the student Lab 5 assignment** as a Lab 4 defect they must discover. Frame Branch 8 as wiring change-password to the authenticated principal.
 
@@ -110,7 +110,7 @@ Complete through Branch 13 on the parent (BCrypt, seed hash, registration locked
 - Security: `src/main/java/com/sparkco/lab2_api/features/user/SecurityConfig.java`
 - Users: `.../features/user/` (entity, repo, service, login/register/admin controllers, Thymeleaf templates)
 - Guide: `CST-339-Lab5-Spring-Security.md`
-- Package/artifact naming: **keep Java package `com.sparkco.lab2_api`** (intentional — do not rename packages). Surface labels (navbar, index, main application class) may say Lab 5; Maven `artifactId` / `spring.application.name` may still say `lab2-api` as leftover debt. Do not churn the package tree for cosmetics.
+- Package/artifact naming: **keep Java package `com.sparkco.lab2_api`** (intentional — do not rename packages). Surface labels say Lab 6 (`Lab6ApiApplication`, navbar, home). Maven `artifactId` / `spring.application.name` may still say `lab2-api` as leftover debt. Do not churn the package tree for cosmetics.
 
 ---
 
@@ -125,6 +125,11 @@ Student writeups (PR-focused): `CST-339-CLC_Milestone_3_Cloud_Deployment.md` and
 The Milestone 3 instructor repo already has Lab 3–5 **code** prerequisites for Render (`Dockerfile`, `server.port=${PORT:8080}`, `SPRING_DATASOURCE_*`). Those files also came along in this Lab 6 copy. Live Neon/Render URLs are operational proof, not in Git.
 
 ## Lab 6 (this workspace)
+
+### Source of truth for students
+
+- `CST-339-Lab6-Album-Queries.md` — Lab 6 tutorial (paging, filter, join, aggregate).
+- `CST-339-Lab5-Spring-Security.md` — finished Lab 5 parent; do not retarget it into Lab 6.
 
 Remote: `https://github.com/ru-sparks/cst339-lab6-api.git`. Copied from the evolved Milestone 3 product (labs were not forked on time; still teachable). `canvas_readme.md` stays here.
 
@@ -147,7 +152,7 @@ New query endpoints return Records. They do not return `Album` entities or lazy 
 
 1. **Delete non-Album Chinook features** so this Cursor tree matches the student lab surface. Remove feature packages and tests for artist, track, customer, employee, genre, invoice, invoice_line, media_type, playlist, playlist_track (controllers, services, repositories, DTOs, mappers). Keep `features/user/**`, Thymeleaf admin, Spring Security, `/api/albums`. Greeting was an extra REST endpoint — remove it with the strip. Do **not** put this strip in the student Lab 6 writeup. **Done** (2026-08-14): remaining feature packages are `album` and `user`.
 2. **Recreate Album query infrastructure.** After the strip, Album should still compile, start, and CRUD through `/api/albums` under the Lab 5 security matrix. Then add only what Album queries need: read-side types or repositories for related tables (Artist, Track, …) **behind** Album endpoints. No public CRUD packages for those related entities.
-3. **Then implement the Lab 6 content above** (paging, filtering, join, aggregate) and write the student tutorial markdown.
+3. **Then implement the Lab 6 content above** (paging, filtering, join, aggregate) and write the student tutorial markdown. **Writeup drafted** (2026-08-14): `CST-339-Lab6-Album-Queries.md`. Instructor sample implementation of queries is still upcoming.
 
 Keep Java package `com.sparkco.lab2_api`. Do not rewrite the student README to explain milestone-vs-lab scope.
 
