@@ -5,6 +5,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.when;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -75,7 +76,7 @@ class ApiAuthorizationTest {
     @Test
     @WithMockUser(username = "alice", authorities = "USER")
     void userCanGetApiResource() throws Exception {
-        when(albumService.getAllAlbums(any(Pageable.class)))
+        when(albumService.getAllAlbums(nullable(String.class), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(new AlbumDTO(1, "Test Album", 1))));
 
         mockMvc.perform(get("/api/albums"))
@@ -99,7 +100,7 @@ class ApiAuthorizationTest {
     @Test
     @WithMockUser(username = "admin", authorities = "ADMIN")
     void adminCanGetAndWriteApiResource() throws Exception {
-        when(albumService.getAllAlbums(any(Pageable.class)))
+        when(albumService.getAllAlbums(nullable(String.class), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(new AlbumDTO(1, "Test Album", 1))));
         when(albumService.createAlbum(any(AlbumDTO.class))).thenReturn(new AlbumDTO(1, "Test Album", 1));
         when(albumService.updateAlbum(eq(1), any(AlbumDTO.class))).thenReturn(new AlbumDTO(1, "Test Album", 1));

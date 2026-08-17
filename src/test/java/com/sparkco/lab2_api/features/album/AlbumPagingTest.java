@@ -6,6 +6,9 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.mockito.ArgumentCaptor;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +28,7 @@ import com.sparkco.lab2_api.features.user.SecurityConfig;
 import com.sparkco.lab2_api.features.user.UserRepository;
 
 /**
- * Lab 6 Branch 1: {@code GET /api/albums} returns a Spring Data page, not a bare array.
+ * Lab 6 Branches 1–2: paged {@code GET /api/albums} with optional title filter.
  */
 @WebMvcTest(controllers = AlbumController.class)
 @Import(SecurityConfig.class)
@@ -43,7 +46,7 @@ class AlbumPagingTest {
     @Test
     @WithMockUser(username = "alice", authorities = "USER")
     void getAlbums_returnsPagedJsonWithDefaultSize20() throws Exception {
-        when(albumService.getAllAlbums(any(Pageable.class)))
+        when(albumService.getAllAlbums(nullable(String.class), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(new AlbumDTO(1, "For Those About To Rock We Salute You", 1)),
                         PageRequest.of(0, 20), 372));
 
@@ -56,7 +59,7 @@ class AlbumPagingTest {
                 .andExpect(jsonPath("$.number").value(0));
 
         ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
-        verify(albumService).getAllAlbums(pageableCaptor.capture());
+        verify(albumService).getAllAlbums(isNull(), pageableCaptor.capture());
         assertEquals(0, pageableCaptor.getValue().getPageNumber());
         assertEquals(20, pageableCaptor.getValue().getPageSize());
     }
@@ -64,7 +67,7 @@ class AlbumPagingTest {
     @Test
     @WithMockUser(username = "alice", authorities = "USER")
     void getAlbums_honorsPageAndSizeQueryParameters() throws Exception {
-        when(albumService.getAllAlbums(any(Pageable.class)))
+        when(albumService.getAllAlbums(nullable(String.class), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(new AlbumDTO(21, "Page Two Album", 2)),
                         PageRequest.of(1, 20), 372));
 
@@ -76,8 +79,37 @@ class AlbumPagingTest {
                 .andExpect(jsonPath("$.totalElements").value(372));
 
         ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
-        verify(albumService).getAllAlbums(pageableCaptor.capture());
+        verify(albumService).getAllAlbums(isNull(), pageableCaptor.capture());
         assertEquals(1, pageableCaptor.getValue().getPageNumber());
         assertEquals(20, pageableCaptor.getValue().getPageSize());
+    }
+
+    @Test
+    @WithMockUser(username = "alice", authorities = "USER")
+    void getAlbums_titleFilter_returnsPagedMatchesAndFilteredTotal() throws Exception {
+        when(albumService.getAllAlbums(eq("greatest"), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(new AlbumDTO(1, "Greatest Hits", 1)),
+                        PageRequest.of(0, 1), 4));
+
+        mockMvc.perform(get("/api/albums").param("title", "greatest").param("page", "0").param("size", "20"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].title").value("Greatest Hits"))
+                .andExpect(jsonPath("$.totalElements").value(4));
+
+        verify(albumService).getAllAlbums(eq("greatest"), any(Pageable.class));
+    }
+
+    @Test
+    @WithMockUser(username = "alice", authorities = "USER")
+    void getAlbums_titleFilterWithNoMatches_returnsEmptyPage() throws Exception {
+        when(albumService.getAllAlbums(eq("zzzz-no-such-title"), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(), PageRequest.of(0, 20), 0));
+
+        mockMvc.perform(get("/api/albums").param("title", "zzzz-no-such-title"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content.length()").value(0))
+                .andExpect(jsonPath("$.totalElements").value(0))
+                .andExpect(jsonPath("$.empty").value(true));
     }
 }

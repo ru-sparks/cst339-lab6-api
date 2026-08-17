@@ -8,6 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -17,7 +19,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 /**
- * Lab 6 Branch 1: paging is executed by the repository, not {@code findAll()} plus a Java slice.
+ * Lab 6 Branches 1–2: paging and title filter run in the repository, not in Java after {@code findAll()}.
  */
 @ExtendWith(MockitoExtension.class)
 class AlbumServiceTest {
@@ -36,12 +38,43 @@ class AlbumServiceTest {
         when(albumRepository.findAll(pageable))
                 .thenReturn(new PageImpl<>(List.of(album), pageable, 372));
 
-        Page<AlbumDTO> result = albumService.getAllAlbums(pageable);
+        Page<AlbumDTO> result = albumService.getAllAlbums(null, pageable);
 
         assertEquals(1, result.getContent().size());
         assertEquals(372, result.getTotalElements());
         assertEquals("For Those About To Rock We Salute You", result.getContent().get(0).title());
         verify(albumRepository).findAll(pageable);
         verify(albumRepository, never()).findAll();
+        verify(albumRepository, never()).findByTitleContainingIgnoreCase(anyString(), any());
+    }
+
+    @Test
+    void getAllAlbums_whenTitlePresent_filtersInRepository() {
+        Pageable pageable = PageRequest.of(0, 20);
+        Album album = new Album("Greatest Hits", 1);
+        album.setAlbumId(1);
+        when(albumRepository.findByTitleContainingIgnoreCase("greatest", pageable))
+                .thenReturn(new PageImpl<>(List.of(album), PageRequest.of(0, 1), 4));
+
+        Page<AlbumDTO> result = albumService.getAllAlbums("greatest", pageable);
+
+        assertEquals(1, result.getContent().size());
+        assertEquals(4, result.getTotalElements());
+        assertEquals("Greatest Hits", result.getContent().get(0).title());
+        verify(albumRepository).findByTitleContainingIgnoreCase("greatest", pageable);
+        verify(albumRepository, never()).findAll();
+        verify(albumRepository, never()).findAll(pageable);
+    }
+
+    @Test
+    void getAllAlbums_whenTitleBlank_pagesUnfiltered() {
+        Pageable pageable = PageRequest.of(0, 20);
+        when(albumRepository.findAll(pageable))
+                .thenReturn(new PageImpl<>(List.of(), pageable, 347));
+
+        albumService.getAllAlbums("  ", pageable);
+
+        verify(albumRepository).findAll(pageable);
+        verify(albumRepository, never()).findByTitleContainingIgnoreCase(anyString(), any());
     }
 }
