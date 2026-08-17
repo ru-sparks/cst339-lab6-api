@@ -1,9 +1,17 @@
 package com.sparkco.lab2_api.features.album;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * REST controller for album CRUD operations.
@@ -19,13 +27,48 @@ public class AlbumController {
     }
 
     /**
-     * Retrieve all albums.
+     * Retrieve a page of albums. Query parameters {@code page} (0-based),
+     * {@code size}, and {@code sort} bind to Spring Data {@link Pageable}.
+     * Default size is 20. {@code page=0} with {@code size} and {@code sort} is a top N.
      *
-     * @return a list of all album DTOs
+     * @param pageable page index, size, and optional sort from the request
+     * @return a Spring Data page of album DTOs ({@code content} plus paging metadata)
      */
     @GetMapping
-    public List<AlbumDTO> getAllAlbums() {
-        return albumService.getAllAlbums();
+    @Operation(
+            summary = "List albums (paged)",
+            description = """
+                    Returns a Spring Data Page of AlbumDTO (content plus metadata).
+                    All query parameters are optional. Omit them for page 0, size 20, unsorted.
+                    page=0 with size and sort is a top N (for example size=20&sort=title is a top 20 by title).
+                    sort must be an Album field (title, albumId, artistId), optionally with ,desc.
+                    Do not send the OpenAPI placeholder string.
+                    """)
+    @Parameters({
+            @Parameter(
+                    name = "page",
+                    in = ParameterIn.QUERY,
+                    required = false,
+                    description = "0-based page index. Default 0.",
+                    schema = @Schema(type = "integer", defaultValue = "0", example = "0")),
+            @Parameter(
+                    name = "size",
+                    in = ParameterIn.QUERY,
+                    required = false,
+                    description = "Page size. Default 20. With page 0 and sort, this is a top N.",
+                    schema = @Schema(type = "integer", defaultValue = "20", example = "20")),
+            @Parameter(
+                    name = "sort",
+                    in = ParameterIn.QUERY,
+                    required = false,
+                    description = "Album property to sort by, optionally with direction. "
+                            + "Examples: title, title,desc, albumId. Omit for database order. "
+                            + "Do not send the type placeholder string.",
+                    schema = @Schema(type = "string", example = "title"))
+    })
+    public Page<AlbumDTO> getAllAlbums(
+            @Parameter(hidden = true) @PageableDefault(size = 20) Pageable pageable) {
+        return albumService.getAllAlbums(pageable);
     }
 
     /**

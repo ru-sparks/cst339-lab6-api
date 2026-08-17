@@ -1,9 +1,9 @@
 package com.sparkco.lab2_api.features.album;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class AlbumService {
@@ -14,10 +14,12 @@ public class AlbumService {
         this.albumRepository = albumRepository;
     }
 
-    public List<AlbumDTO> getAllAlbums() {
-        return albumRepository.findAll().stream()
-                .map(AlbumMapper::toDTO)
-                .collect(Collectors.toList());
+    /**
+     * Page albums from PostgreSQL. Spring Data applies LIMIT/OFFSET in the query;
+     * this does not load the full Chinook catalog and slice it in memory.
+     */
+    public Page<AlbumDTO> getAllAlbums(Pageable pageable) {
+        return albumRepository.findAll(pageable).map(AlbumMapper::toDTO);
     }
 
     public AlbumDTO getAlbumById(Integer albumId) {
