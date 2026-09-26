@@ -30,6 +30,8 @@ Paging is required because 372 albums is enough for page number and page size to
 - Keep Lab 5 security: query `GET`s are allowed for `USER` and `ADMIN`; writes stay `ADMIN`-only.
 - Keep existing Album create/update/delete using `AlbumDTO` as a 1:1 CRUD message.
 
+
+
 ### Prerequisites
 
 - Complete Labs 1–5 in **your existing lab repository**. Continue that repo. Do not start a new GitHub project for Lab 6.
@@ -39,17 +41,21 @@ Paging is required because 372 albums is enough for page number and page size to
 - Use the existing feature-branch and pull-request workflow.
 - Add your instructor as a GitHub repository collaborator before Branch 1 if that access is not already in place.
 
+
+
 ### Architectural Scope
 
 After finishing this lab, Album still supports CRUD, and it also supports a read-side query:
 
-| Application area | Message type | Persistence |
-| --- | --- | --- |
-| Album create / update / delete / get-by-id | `AlbumDTO` (`albumId`, `title`, `artistId`) | `Album` entity, `album` table |
-| Album collection list | Paged `AlbumDTO` | `album` table only |
-| Album query (name, counts) | New Record (not `Album`, not `AlbumDTO`) | `album` + `artist` + `track` via query |
-| User registration and administration | Thymeleaf + Lab 5 security | `users` table |
-| API docs | Swagger UI / OpenAPI | Same Lab 5 rules |
+
+| Application area                           | Message type                                | Persistence                            |
+| ------------------------------------------ | ------------------------------------------- | -------------------------------------- |
+| Album create / update / delete / get-by-id | `AlbumDTO` (`albumId`, `title`, `artistId`) | `Album` entity, `album` table          |
+| Album collection list                      | Paged `AlbumDTO`                            | `album` table only                     |
+| Album query (name, counts)                 | New Record (not `Album`, not `AlbumDTO`)    | `album` + `artist` + `track` via query |
+| User registration and administration       | Thymeleaf + Lab 5 security                  | `users` table                          |
+| API docs                                   | Swagger UI / OpenAPI                        | Same Lab 5 rules                       |
+
 
 Controllers stay thin. Services coordinate queries. Repositories execute paging, filters, joins, and aggregates. Spring Security still decides whether a request may reach those controllers. Lab 6 does not reopen Lab 5’s filter chain design.
 
@@ -73,13 +79,17 @@ Do:
 - Introduce a new Record for the join/aggregate query.
 - Page and filter in the repository query (JPQL, Spring Data query methods, or equivalent) so PostgreSQL does the work.
 
+
+
 ### Role Authorization Policy (unchanged from Lab 5)
 
-| Authority | `/api/**` GET | `/api/**` POST, PUT, DELETE | Swagger UI / OpenAPI | Thymeleaf `/admin/**` |
-| --- | --- | --- | --- | --- |
-| Anonymous | Denied | Denied | Denied | Denied |
-| `USER` | Allowed | Denied (403) | Allowed (writes still 403) | Denied |
-| `ADMIN` | Allowed | Allowed | Allowed | Allowed |
+
+| Authority | `/api/**` GET | `/api/**` POST, PUT, DELETE | Swagger UI / OpenAPI       | Thymeleaf `/admin/**` |
+| --------- | ------------- | --------------------------- | -------------------------- | --------------------- |
+| Anonymous | Denied        | Denied                      | Denied                     | Denied                |
+| `USER`    | Allowed       | Denied (403)                | Allowed (writes still 403) | Denied                |
+| `ADMIN`   | Allowed       | Allowed                     | Allowed                    | Allowed               |
+
 
 New query endpoints are `GET`s under `/api/**`. A `USER` must be able to call them. Do not invent a new security matrix.
 
@@ -102,17 +112,19 @@ Complete each branch in order. Each branch should contain one coherent feature a
 
 ---
 
+
+
 ## Branch 1: Page the Album Collection
 
 Chinook has **372** albums. Before you change anything, call `GET /api/albums` as a signed-in `USER` and **look at the payload**. That list is the problem this branch solves.
 
 Page the existing collection resource. Keep `AlbumDTO` 1:1 with `Album`. Do not join artist yet.
 
-Spring’s `Pageable` is not only page number and page size. It also carries **`Sort`**. You do not add a second sorting API. Once `GET /api/albums` takes `Pageable` and the repository calls `findAll(pageable)`, `?sort=title` is already wired. The catch is the same as paging: `sort` must name a real `Album` property. Swagger’s placeholder `string` is a type name, not a field.
+Spring’s `Pageable` is not only page number and page size. It also carries `Sort`. You do not add a second sorting API. Once `GET /api/albums` takes `Pageable` and the repository calls `findAll(pageable)`, `?sort=title` is already wired. That parameter is less flexible than it looks: the value must be a Java property on `Album` (`title`, `albumId`, `artistId`), not a column alias, not artist name, and not Swagger’s type placeholder `string`. `sort=title` works; `sort=greatest` or `sort=string` does not.
 
 That pairing is what makes a **top N**. `page=0`, `size=20`, `sort=title` is the first 20 albums in title order. Change `size` to 50 and you have a top 50 — same endpoint, no extra code. Without `sort`, page 0 is only “the first 20 rows in database order,” which is not a ranking.
 
-Keep the names straight: **`Pageable` is the request** (`page`, `size`, `sort`). **`Page` is the response**: the slice (`content`) plus **metadata** (`totalElements`, `totalPages`, `number`, `size`, `first`, `last`, and a nested echo of the `Pageable`). Lab 5 returned a bare array, which has no metadata. Returning `Page` is what gives the client a way to navigate.
+Keep the names straight: `Pageable` **is the request** (`page`, `size`, `sort`). `Page` **is the response**: the slice (`content`) plus **metadata** (`totalElements`, `totalPages`, `number`, `size`, `first`, `last`, and a nested echo of the `Pageable`). Lab 5 returned a bare array, which has no metadata. Returning `Page` is what gives the client a way to navigate.
 
 ### Learning Expectations
 
@@ -125,6 +137,8 @@ Keep the names straight: **`Pageable` is the request** (`page`, `size`, `sort`).
 - That `GET /api/albums` with no query string still pages: default page 0, size 20. Swagger may mark the `Pageable` object required; the server does not.
 - Why paging belongs in the repository, not in a Java `subList` after `findAll()`.
 - That the `Pageable` abstraction hides SQL, not the contract: pages are 0-based, returning `Page` is what produces `content` plus `totalElements`, and `sort` must be an `Album` field (`title`, `albumId`, `artistId`), not Swagger’s `string`.
+
+
 
 ### Required Work
 
@@ -139,6 +153,8 @@ Keep the names straight: **`Pageable` is the request** (`page`, `size`, `sort`).
 - Update any test that assumed `GET /api/albums` returned a bare JSON array.
 - Document the collection query parameters (`page`, `size`, `sort`) in Swagger and the README so a classmate can call them without reading the controller. Title filter still waits.
 
+
+
 ### Checkpoint
 
 - Unpaged `findAll()` is no longer the collection implementation.
@@ -149,6 +165,8 @@ Keep the names straight: **`Pageable` is the request** (`page`, `size`, `sort`).
 - `GET /api/albums?page=0&size=20&sort=title` is the first 20 by title (a top 20). `size=50` is a top 50. `sort=title,desc` reverses the ranking.
 - Get-by-id and writes still work for `ADMIN`.
 - Students can explain the Swagger `Pageable` object (`page`, `size`, `sort: ["string"]`), why they must replace `"string"`, that Swagger may mark it required even though a bare `GET /api/albums` is valid, and how to read `content` vs `totalElements` in the `Page` JSON.
+
+
 
 ### What to expect now
 
@@ -168,7 +186,7 @@ When you do use Swagger’s object, it looks like this **before** you Execute:
 
 That `sort` value is the OpenAPI type placeholder. `Album` has no property named `string`, so Execute throws `PropertyReferenceException` (HTTP 500). **Fix the throw before you judge paging:** replace `"string"` with a real field (`"title"` or `"title,desc"`), or use `"sort": []` for database order. Then Execute.
 
-You should get Spring Data `Page` JSON, not Lab 5’s bare array. The body has two parts: **`content`** (the albums on this page) and **metadata** (everything else — totals, page index, flags, and an echo of the `Pageable` you sent). With `page` 0, `size` 1, and `sort` `title`, it looks like this (your titles and totals will differ; this copy has 347 albums):
+You should get Spring Data `Page` JSON, not Lab 5’s bare array. The body has two parts: `content` (the albums on this page) and **metadata** (everything else — totals, page index, flags, and an echo of the `Pageable` you sent). With `page` 0, `size` 1, and `sort` `title`, it looks like this (your titles and totals will differ; this copy has 347 albums):
 
 ```json
 {
@@ -201,13 +219,13 @@ You should get Spring Data `Page` JSON, not Lab 5’s bare array. The body has t
 
 Read the metadata in this order (after `content`):
 
-- **`content`** — this page’s `AlbumDTO`s. Still `albumId`, `title`, `artistId`. One row because `size` was 1. `"...And Justice For All"` is first under `sort=title` because punctuation sorts before letters.
-- **`totalElements`** — the catalog count (here 347). Chinook is often cited near 347–372; your copy may differ. It must **not** equal `size` unless you really have only one album.
-- **`totalPages`** — `ceil(totalElements / size)`. With `size` 1 that equals `totalElements`.
-- **`number`** / **`size`** — 0-based page index and requested page size.
-- **`numberOfElements`** — how many rows actually came back on this page (can be smaller than `size` on the last page).
-- **`first`**, **`last`**, **`empty`** — where this page sits in the collection.
-- **`pageable`** — echo of the request (`offset` is `page * size`). Nested `sort` tells you whether a sort was applied (`sorted: true`), not the property name. The field you typed in Swagger does not always reappear in this JSON.
+- `content` — this page’s `AlbumDTO`s. Still `albumId`, `title`, `artistId`. One row because `size` was 1. `"...And Justice For All"` is first under `sort=title` because punctuation sorts before letters.
+- `totalElements` — the catalog count (here 347). Chinook is often cited near 347–372; your copy may differ. It must **not** equal `size` unless you really have only one album.
+- `totalPages` — `ceil(totalElements / size)`. With `size` 1 that equals `totalElements`.
+- `number` / `size` — 0-based page index and requested page size.
+- `numberOfElements` — how many rows actually came back on this page (can be smaller than `size` on the last page).
+- `first`, `last`, `empty` — where this page sits in the collection.
+- `pageable` — echo of the request (`offset` is `page * size`). Nested `sort` tells you whether a sort was applied (`sorted: true`), not the property name. The field you typed in Swagger does not always reappear in this JSON.
 
 Call a second page (`page` 1, same `size`) and confirm `content` changes, `number` is 1, and `totalElements` stays the same.
 
@@ -221,15 +239,23 @@ Commit and push the branch. Open a pull request, review the change, and merge it
 
 ---
 
+
+
 ## Branch 2: Filter Paged Albums by Title
 
 Add an optional title filter to the paged collection. Stay on the `album` table and `AlbumDTO`. The join still waits.
+
+On this resource, **title is the only field that is logical to filter on**. `albumId` is get-by-id, not a collection search. `artistId` is an integer FK — callers do not search “50”. Artist **name** is the filter they want, and that column is not on `album`. So Branch 2 adds one query parameter, `title`, and leaves name search for the join.
 
 ### Learning Expectations
 
 - Why filtering must happen in the query when the table has hundreds of rows.
 - How an optional request parameter combines with `Pageable`.
 - Why `totalElements` after a filter is the filtered total, not 372.
+- That **title filter** is the custom query (`findByTitleContainingIgnoreCase`). **Sort** is not. `Pageable` already carries `Sort` into both `findAll(pageable)` and that derived method, so you do not write `findBy…OrderByTitle`.
+- Why `title` is the only collection filter on `GET /api/albums`: it is the only human-searchable column on `album`.
+
+
 
 ### Required Work
 
@@ -237,9 +263,11 @@ Add an optional title filter to the paged collection. Stay on the `album` table 
 - When `title` is present, return only albums whose title matches (case-insensitive contains is appropriate).
 - When `title` is absent, behavior matches Branch 1 (all albums, paged).
 - Keep paging. A filtered result that still has many rows must not dump the rest.
-- Implement the filter in the repository (query method, JPQL, or Criteria) — not `findAll()` plus a Java stream.
+- Implement the filter in the repository (query method, JPQL, or Criteria) — not `findAll()` plus a Java stream. A derived method such as `findByTitleContainingIgnoreCase(String title, Pageable pageable)` is enough. Do not add a second method just to sort.
 - Do not add artist-name filtering yet. That requires the join in a later branch.
 - Do not change `AlbumDTO`.
+
+
 
 ### Checkpoint
 
@@ -247,6 +275,9 @@ Add an optional title filter to the paged collection. Stay on the `album` table 
 - The total in that response is the number of matches, not the full 372.
 - `GET /api/albums?page=0&size=20` with no `title` still pages the full catalog.
 - Students can explain why filtering after `findAll()` is not acceptable here.
+- Students can explain why `sort=title` works on both the unfiltered and filtered calls even though the only custom repository method is the title contains query.
+
+
 
 ### What to expect now
 
@@ -257,6 +288,8 @@ Add an optional title filter to the paged collection. Stay on the `album` table 
 Commit and push the branch. Open a pull request, review the change, and merge it before beginning the next branch.
 
 ---
+
+
 
 ## Branch 3: Join Artist Name into a Query Record
 
@@ -271,6 +304,8 @@ Map Chinook `artist` only as query infrastructure. Do **not** add `/api/artists`
 - Why related tables do not automatically become public REST resources.
 - Why returning an `Album` entity with a lazy `Artist` association is not the solution.
 
+
+
 ### Required Work
 
 - Add a persistence mapping for Chinook `artist` (`artist_id`, `name`) sufficient to join in a query. No `ArtistController`. No public artist CRUD service used as an API.
@@ -283,6 +318,8 @@ Map Chinook `artist` only as query infrastructure. Do **not** add `/api/artists`
 - Do not add track count yet.
 - Lab 5 security: this `GET` is allowed for `USER` and `ADMIN`.
 
+
+
 ### Checkpoint
 
 - There is no `/api/artists` (or equivalent artist CRUD controller).
@@ -290,6 +327,8 @@ Map Chinook `artist` only as query infrastructure. Do **not** add `/api/artists`
 - The type returned is a Record (or equivalent query DTO), not `Album` and not `AlbumDTO`.
 - A page of summaries is smaller than 372, and the total is still about 372 when unfiltered.
 - Students can explain why stuffing `artistName` onto `AlbumDTO` would break the CRUD contract.
+
+
 
 ### What to expect now
 
@@ -301,6 +340,8 @@ Commit and push the branch. Open a pull request, review the change, and merge it
 
 ---
 
+
+
 ## Branch 4: Filter the Query by Artist Name
 
 The join now earns its keep: callers can filter on artist **name**, which is not a column on `album`.
@@ -311,6 +352,8 @@ The join now earns its keep: callers can filter on artist **name**, which is not
 - How optional filters compose with a join and with `Pageable`.
 - Why the filtered total is a count of matching joined rows (album grain), not a dump of tracks.
 
+
+
 ### Required Work
 
 - Add an optional query parameter such as `artistName` on the **query** endpoint from Branch 3.
@@ -319,11 +362,15 @@ The join now earns its keep: callers can filter on artist **name**, which is not
 - Still no track aggregate.
 - Still no artist CRUD API.
 
+
+
 ### Checkpoint
 
 - `GET /api/albums/summaries?artistName=ac/dc` (or another known Chinook name) returns only that artist’s albums, paged, each row showing the artist name.
 - With no `artistName`, summaries still page the catalog.
 - Filtering is not implemented by loading all summaries and dropping rows in Java.
+
+
 
 ### What to expect now
 
@@ -335,6 +382,8 @@ Commit and push the branch. Open a pull request, review the change, and merge it
 
 ---
 
+
+
 ## Branch 5: Aggregate Track Count on the Same Query Record
 
 Tracks belong to albums. The query message should include how many tracks each album has. Map Chinook `track` only as query infrastructure. Do **not** add `/api/tracks`.
@@ -345,6 +394,8 @@ Tracks belong to albums. The query message should include how many tracks each a
 - Why the query stays at **album grain**: one Record per album, not one per track.
 - Why `GROUP BY` (or an equivalent counted join) belongs in the database.
 
+
+
 ### Required Work
 
 - Add a persistence mapping for Chinook `track` sufficient to count tracks per album (`album_id` is the link). No `TrackController`.
@@ -354,12 +405,16 @@ Tracks belong to albums. The query message should include how many tracks each a
 - Do not return a list of track entities on the album query.
 - Optional: you may also expose total duration (`SUM(milliseconds)`) **instead of or in addition to** `trackCount`. Track count is the required default.
 
+
+
 ### Checkpoint
 
 - Query JSON includes `trackCount` (or documented duration) plus artist name.
 - A known album’s count matches pgAdmin (or a SQL `COUNT`) for that `album_id`.
 - The endpoint still returns one row per album, not one row per track.
 - There is no `/api/tracks` CRUD controller.
+
+
 
 ### What to expect now
 
@@ -371,6 +426,8 @@ Commit and push the branch. Open a pull request, review the change, and merge it
 
 ---
 
+
+
 ## Branch 6: Prove Queries and Keep Lab 5 Security
 
 Automated tests should lock the query contract so a later change cannot silently return entities or drop paging.
@@ -381,6 +438,8 @@ Automated tests should lock the query contract so a later change cannot silently
 - How `@WithMockUser(authorities = "USER")` still applies to new `GET`s.
 - Why tests should assert artist name and track count on the query Record, not only HTTP 200.
 
+
+
 ### Required Work
 
 - Tests for the collection endpoint: a page size smaller than the total; total elements greater than that page size.
@@ -389,11 +448,15 @@ Automated tests should lock the query contract so a later change cannot silently
 - Security tests: anonymous query `GET` is rejected; `USER` can `GET` the query endpoint; `USER` still cannot `POST /api/albums`; `ADMIN` can still write.
 - You may extend `ApiAuthorizationTest` or add a focused test class. Keep using `authorities`, not `roles`, because the filter chain uses `hasAuthority`.
 
+
+
 ### Checkpoint
 
 - `mvn test` passes locally.
 - A reader can see tests for paging, join fields, aggregate, and the Lab 5 matrix.
 - Students can explain which tests would fail if someone returned `List<Album>` again.
+
+
 
 ### What to expect now
 
@@ -404,6 +467,8 @@ Commit and push the branch. Open a pull request, review the change, and merge it
 
 ---
 
+
+
 ## Branch 7: Document the Query API
 
 Classmates (and your future self) must be able to call paging and query parameters without reading your controller source.
@@ -412,6 +477,8 @@ Classmates (and your future self) must be able to call paging and query paramete
 
 - Why query parameters are part of the API contract.
 - Why README demo login (`admin` / `password`) is still not the PostgreSQL password (Lab 5 Branch 13).
+
+
 
 ### Required Work
 
@@ -422,11 +489,15 @@ Classmates (and your future self) must be able to call paging and query paramete
 - Confirm Swagger shows the new parameters and the query Record schema.
 - Do not put live datasource passwords in the README. Do not rewrite the README into a lecture on lab-track vs CLC-track.
 
+
+
 ### Checkpoint
 
 - A classmate could page and filter from the README alone.
 - Swagger lists the query endpoint after sign-in.
 - Committed properties still have no live cloud database password.
+
+
 
 ### What to expect now
 
@@ -436,6 +507,8 @@ Classmates (and your future self) must be able to call paging and query paramete
 Commit and push the branch. Open a pull request, review the change, and merge it.
 
 ---
+
+
 
 ## Verification
 
@@ -454,9 +527,13 @@ Commit and push the branch. Open a pull request, review the change, and merge it
 
 ---
 
+
+
 ## Deliverables
 
-### 1. GitHub Repository
+
+
+### 1. GitHub Repository (40%)
 
 - All seven feature branches, or an instructor-approved equivalent that preserves the same incremental history (paging before join before aggregate).
 - Pull requests and merge history in order.
@@ -465,7 +542,9 @@ Commit and push the branch. Open a pull request, review the change, and merge it
 - README documents paging and query parameters.
 - No committed real production passwords, API keys, or cloud database secrets.
 
-### 2. Video Demonstration
+
+
+### 2. Video Demonstration (40%)
 
 - The 372-row problem: a paged collection with a total much larger than the page.
 - Title filter on the collection.
@@ -476,7 +555,9 @@ Commit and push the branch. Open a pull request, review the change, and merge it
 - `USER` can GET queries; `USER` cannot POST albums; `ADMIN` can write.
 - An explicit explanation of entity vs CRUD DTO vs query Record.
 
-### 3. AI References
+
+
+### 3. AI References (20%)
 
 - Prompt or prompts used.
 - AI system and model.
@@ -486,23 +567,21 @@ Commit and push the branch. Open a pull request, review the change, and merge it
 
 ---
 
-## Optional Stretch Branches
 
-These are not required unless announced by the instructor.
 
-### Stretch A: Total duration
+## Honors Branch
+
+This is required for honors students, optional for everyone else.
+
+### Total duration
 
 Add `totalMilliseconds` (or a formatted duration) using `SUM` on `track.milliseconds`, still one row per album.
 
-### Stretch B: Sort the query by track count
 
-Album-field sort (`title`, `albumId`) already came with Branch 1’s `Pageable`. This stretch is the case that is **not** free: honor `sort` on `trackCount` on the query endpoint. That value is an aggregate, not an `Album` property, so `?sort=trackCount` will not map the way `?sort=title` did on `/api/albums`. Document the parameter.
-
-### Stretch C: Genre name
-
-Join genre through track only if you can keep **album grain** (decide what a single genre name means when tracks differ). If that decision is messy, skip it — that mess is why this stretch is optional.
-
+Be prepared to present this to the class.
 ---
+
+
 
 ## Study Guide — Lab 6
 
@@ -513,6 +592,8 @@ This study guide emphasizes why Lab 5’s 1:1 `AlbumDTO` was not the end of the 
 Spring’s `Pageable` is the paging API — and it already includes **sort**. The controller does not parse `page`, `size`, or `sort`. Spring binds `?page=1&size=20&sort=title` into one `Pageable`. `JpaRepository` already has `findAll(Pageable)`, so Hibernate emits `LIMIT`/`OFFSET`, an `ORDER BY` when sort is present, plus a count query. That count becomes `totalElements` (~372), not the page size.
 
 You do not add a second “sortable collection” feature for Album fields. `Sort` arrived with paging. Together they give you a **top N**: `page=0`, `size=20`, `sort=title` is the first 20 in that order; `size=50` is a top 50. Without `sort`, the first page is only database order, not a ranking.
+
+`sort=value` is less flexible than it looks. The value is an `Album` property path (`title`, `albumId`, `artistId`), not free text and not a SQL column alias. `sort=title` works. `sort=greatest` does not. Artist name and `trackCount` are not `Album` fields, so they cannot ride this parameter.
 
 The abstraction hides SQL. It does not hide the contract. Students still have to know that pages are **0-based**, that returning `Page` is what produces `content` plus `totalElements`, and that `sort` must name a real `Album` field (`title`, `albumId`, `artistId`), optionally with a direction (`title,desc`).
 
@@ -535,13 +616,19 @@ Students should be able to explain:
 11. Why returning `Page` (not `List`) is what gives the client that JSON shape.
 12. Why sorting by `trackCount` on the query Record is a different problem than sorting by `title` on `Album`.
 
+
+
 ### Filtering
 
 Students should be able to explain:
 
 1. Why optional query parameters must not require a new endpoint for every combination.
 2. Why the filtered total is the match count.
-3. Why title filter can stay on `album`, but artist-name filter cannot.
+3. Why title is the only logical collection filter on `GET /api/albums` (`albumId` is get-by-id; `artistId` is a FK integer). Why title filter can stay on `album`, but artist-name filter cannot.
+4. Why the only custom repository method is the title contains query, and why `sort=title` still works: `Pageable` applies `ORDER BY` to `findAll` and to `findByTitleContainingIgnoreCase`. Sort is not a second derived method.
+5. Why a PostgreSQL index on `album_id` or `artist_id` is not why `sort=albumId` works. An index can make `ORDER BY` cheaper. It does not create a Spring Data method. `sort=title` also needs no custom method, indexed or not. The derived method exists because “contains, ignore case” is a `WHERE` shape `JpaRepository` does not already have.
+
+
 
 ### Entity, CRUD DTO, and query Record
 
@@ -552,6 +639,8 @@ Students should be able to explain:
 3. Why adding fields onto `AlbumDTO` until it matches every screen is how APIs rot.
 4. Why this lab forbids returning JPA entity graphs as JSON.
 
+
+
 ### Joins and aggregates
 
 Students should be able to explain:
@@ -561,6 +650,8 @@ Students should be able to explain:
 3. Album grain means one JSON object per album, even after joining tracks.
 4. Related tables can exist in JPA without becoming `/api/artists` and `/api/tracks`.
 
+
+
 ### Security
 
 Students should be able to explain:
@@ -568,6 +659,8 @@ Students should be able to explain:
 1. Lab 6 query endpoints are still `/api/**` GETs under the Lab 5 matrix.
 2. A new GET does not justify weakening POST/PUT/DELETE rules.
 3. Swagger try-outs for writes still fail for `USER`.
+
+
 
 ### Common Failure Points
 
@@ -579,12 +672,14 @@ Students should be prepared to diagnose:
 4. Parsing `page`, `size`, or `sort` as raw parameters instead of taking Spring’s `Pageable`.
 5. `No property 'string' found for type 'Album'` because Swagger’s `Pageable` object shipped `sort: ["string"]`. Replace `"string"` with `title` (or `title,desc`) or use `"sort": []`. Do not treat sort as a later feature you still have to code for `Album`.
 6. Adding a separate “sort albums” endpoint after paging, instead of noticing `Sort` already arrived with `Pageable`.
-7. Artist names loaded in a loop (N+1) after paging albums.
-8. `LazyInitializationException` or huge JSON from serializing entity associations.
-9. `AlbumDTO` modified to carry `artistName`, then POST failed or ignored the extra field.
-10. `findAll()` plus Java `filter`/`skip`/`limit` presented as paging.
-11. A new `ArtistController` “for convenience.”
-12. Query `GET` accidentally requiring `ADMIN` because it was not under `GET /api/**`.
-13. Tests using `@WithMockUser(roles = "USER")` while the app checks `hasAuthority("USER")`.
+7. Claiming `sort=albumId` needs no custom method *because* `album_id` is indexed. Indexes are storage. `Pageable` is why `ORDER BY` appears. The title contains method exists for the `WHERE`, not because `title` lacks an index.
+8. Artist names loaded in a loop (N+1) after paging albums.
+9. `LazyInitializationException` or huge JSON from serializing entity associations.
+10. `AlbumDTO` modified to carry `artistName`, then POST failed or ignored the extra field.
+11. `findAll()` plus Java `filter`/`skip`/`limit` presented as paging.
+12. A new `ArtistController` “for convenience.”
+13. Query `GET` accidentally requiring `ADMIN` because it was not under `GET /api/**`.
+14. Tests using `@WithMockUser(roles = "USER")` while the app checks `hasAuthority("USER")`.
 
 ---
+
